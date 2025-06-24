@@ -54,7 +54,7 @@
             <label class="form-label">Thời điểm bắt đầu
                 <small>(Ví dụ: 2025/06/03 13:00)</small>
             </label>
-            <input type="text" class="form-control" name="start_time" required placeholder="VD: 2025/06/03 13:00">
+            <input type="text" class="form-control flatpickr-datetime" name="start_time" required placeholder="VD: 2025/06/03 13:00">
         </div>
         <div class="mb-3">
             <label class="form-label">Danh sách công việc
@@ -247,6 +247,20 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // Gắn Flatpickr cho tất cả các input khoảng nghỉ đã có khi render
     document.querySelectorAll('input[name="non_working_day_date_time_range"]').forEach(enableFlatpickrOnInput);
+
+    // Gắn Flatpickr cho input Thời điểm bắt đầu
+    var startTimeInput = document.querySelector('input.flatpickr-datetime[name="start_time"]');
+    if(startTimeInput) {
+        flatpickr(startTimeInput, {
+            locale: { ...flatpickr.l10ns.vn, firstDayOfWeek: 1 },
+            enableTime: true,
+            dateFormat: "Y/m/d H:i",
+            time_24hr: true,
+            allowInput: true,
+            altInput: true,
+            altFormat: "Y/m/d H:i"
+        });
+    }
 
     // Gắn chức năng Save to CSV nếu có kết quả
     var downloadLink = document.getElementById('download-csv-link');
