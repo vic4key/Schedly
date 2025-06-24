@@ -87,7 +87,8 @@
     {% if csv_content %}
         <div class="result mt-4">
             <b>Kết quả CSV (<a href="#" id="download-csv-link">Save to CSV</a>):</b>
-            <pre id="csv-result">{{ csv_content }}</pre>
+            <pre id="csv-result" style="display:none;">{{ csv_content }}</pre>
+            <div id="csv-table"></div>
         </div>
     {% endif %}
 </div>
@@ -265,7 +266,35 @@ window.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() { window.URL.revokeObjectURL(url); }, 500);
         });
     }
+    // Hiển thị CSV dưới dạng bảng
+    var csvTableDiv = document.getElementById('csv-table');
+    if(csvPre && csvTableDiv) {
+        var csv = csvPre.textContent || csvPre.innerText;
+        if(csv.trim()) {
+            csvTableDiv.innerHTML = csvToTable(csv);
+        }
+    }
 });
+
+// Thêm hàm chuyển CSV thành bảng HTML
+function csvToTable(csv) {
+    // Tách dòng, bỏ dòng rỗng cuối nếu có
+    var rows = csv.split(/\r?\n/).filter(r => r.trim().length > 0);
+    if(rows.length === 0) return '';
+    var html = '<table class="table table-bordered table-sm mt-2">';
+    rows.forEach(function(row, idx) {
+        var cols = row.split(',');
+        html += '<tr>';
+        cols.forEach(function(col) {
+            var cell = col.replace(/"/g, '').trim();
+            if(idx === 0) html += '<th>' + cell + '</th>';
+            else html += '<td>' + cell + '</td>';
+        });
+        html += '</tr>';
+    });
+    html += '</table>';
+    return html;
+}
 </script>
 </body>
 </html>
