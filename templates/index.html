@@ -144,10 +144,9 @@ function renderForm(model) {
     // breaks
     const breaksList = document.getElementById('breaks-list');
     breaksList.innerHTML = "";
-    const arr = model.non_working_day_date_time_range && model.non_working_day_date_time_range.length
-        ? model.non_working_day_date_time_range
-        : [""];
-    arr.forEach(val => addBreakField(val));
+    if (model.non_working_day_date_time_range && model.non_working_day_date_time_range.length > 0) {
+        model.non_working_day_date_time_range.forEach(val => addBreakField(val));
+    }
     updateRemove();
 }
 
@@ -162,9 +161,9 @@ function makeBreakInput(value="") {
     `;
 }
 function updateRemove() {
-    let n = document.querySelectorAll('.break-row').length;
+    // Luôn hiển thị nút X để có thể xóa hết các input picker
     document.querySelectorAll('.remove-break').forEach(btn => {
-        btn.style.display = (n > 1) ? '' : 'none';
+        btn.style.display = '';
     });
 }
 function addBreakField(value="") {
@@ -185,7 +184,13 @@ document.getElementById('breaks-list').addEventListener('click', function(e){
     if(e.target.classList.contains('remove-break')) {
         e.target.closest('.break-row').remove();
         updateRemove();
-        saveModel(getModelFromForm());
+        // Nếu không còn input nào, lưu mảng rỗng
+        let breaks = document.querySelectorAll('input[name="non_working_day_date_time_range"]');
+        let model = getModelFromForm();
+        if (breaks.length === 0) {
+            model.non_working_day_date_time_range = [];
+        }
+        saveModel(model);
     }
 });
 document.querySelector('input[name="working_day_time_range"]').addEventListener('input', () => saveModel(getModelFromForm()));
