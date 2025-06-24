@@ -11,13 +11,13 @@ def index():
         try:
             working_day_time_range = [s.strip() for s in request.form["working_day_time_range"].split(",") if s.strip()]
             start_time = request.form["start_time"].strip()
-            # Task nhập từng dòng: Tên task,est
+            # Task nhập từng dòng: Tên task,estimate_time
             task_lines = [l.strip() for l in request.form["task_list"].split("\n") if l.strip()]
             task_list = []
             for line in task_lines:
                 if "," in line:
-                    name, est = line.split(",", 1)
-                    task_list.append({"name": name.strip(), "est": est.strip()})
+                    name, estimate_time = line.split(",", 1)
+                    task_list.append({"name": name.strip(), "estimate_time": estimate_time.strip()})
             # Lấy tất cả các input cùng tên (danh sách khoảng nghỉ)
             non_working_day_date_time_range = request.form.getlist("non_working_day_date_time_range")
             # Loại bỏ trường hợp user để trống input

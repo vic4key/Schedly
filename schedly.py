@@ -5,15 +5,15 @@ from typing import List, Dict, Optional
 import pandas as pd
 import re
 
-def parse_hours(est_str: str) -> float:
+def parse_hours(estimate_time_str: str) -> float:
     """Chuyển chuỗi thời lượng (vd: '2 hrs', '1.5hr') thành số giờ float."""
     try:
-        num = float(est_str.lower().replace('hrs', '').replace('hr', '').strip())
+        num = float(estimate_time_str.lower().replace('hrs', '').replace('hr', '').strip())
         if num < 0:
             raise ValueError("Estimated hours must be non-negative.")
         return num
     except Exception as e:
-        raise ValueError(f"Không thể parse est: '{est_str}'. Lỗi: {e}")
+        raise ValueError(f"Không thể parse estimate_time: '{estimate_time_str}'. Lỗi: {e}")
 
 def parse_datetime_range(range_str: str):
     """
@@ -98,7 +98,7 @@ def allocate_tasks_by_time_range(
     current_dt = parse(start_time)
     for task in task_list:
         name = task['name']
-        duration = parse_hours(task['est'])
+        duration = parse_hours(task['estimate_time'])
         allocations = []
         remaining = timedelta(hours=duration)
         while remaining > timedelta(0):
@@ -119,7 +119,7 @@ def allocate_tasks_by_time_range(
                 slot_duration_hrs = round(time_to_allocate.total_seconds() / 3600, 6)
                 allocations.append({
                     "range": f"[{period_start.strftime('%Y/%m/%d %H:%M')}-{alloc_end.strftime('%H:%M')}]",
-                    "est": slot_duration_hrs
+                    "estimate_time": slot_duration_hrs
                 })
                 remaining -= time_to_allocate
                 current_dt = alloc_end
@@ -128,7 +128,7 @@ def allocate_tasks_by_time_range(
                     break
             if not allocated_in_this_slot:
                 current_dt = slot_end
-        results.append({"name": name, "slots": allocations, "est": duration})
+        results.append({"name": name, "slots": allocations, "estimate_time": duration})
     return results
 
 def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: str = "details") -> str:
@@ -141,7 +141,7 @@ def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: s
     for task in schedule_output:
         for slot in task['slots']:
             slot_range = slot["range"] if isinstance(slot, dict) else slot
-            slot_est = slot["est"] if output_details else task["est"]
+            slot_est = slot["estimate_time"] if output_details else task["estimate_time"]
             slot_range_str = slot_range.strip("[]")
             start_str, end_str = slot_range_str.split('-')
             start_time = start_str.strip()
@@ -152,7 +152,7 @@ def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: s
                 end_time = end_str.strip()
             rows.append({
                 "task_name": task["name"],
-                "est": slot_est,
+                "estimate_time": slot_est,
                 "start_time": start_time,
                 "end_time": end_time
             })
@@ -166,7 +166,7 @@ def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: s
             if name not in grouped:
                 grouped[name] = {
                     "task_name": name,
-                    "est": row["est"],
+                    "estimate_time": row["estimate_time"],
                     "start_time": row["start_time"],
                     "end_time": row["end_time"]
                 }
@@ -175,5 +175,5 @@ def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: s
                 grouped[name]["end_time"] = row["end_time"]
         rows = list(grouped.values())
 
-    df = pd.DataFrame(rows, columns=["task_name", "est", "start_time", "end_time"])
+    df = pd.DataFrame(rows, columns=["task_name", "estimate_time", "start_time", "end_time"])
     return df.to_csv(index=False)
