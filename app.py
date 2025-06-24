@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import schedly
+import llm
 
 app = Flask(__name__)
 
@@ -42,6 +43,15 @@ def index():
             result = f"Lỗi: {ex}"
 
     return render_template("index.html", result=result, csv_content=csv_content)
+
+@app.route("/api/holidays", methods=["GET"])
+def api_holidays_llm():
+    year = request.args.get("year", type=int)
+    prompt = request.args.get("prompt", default="", type=str)
+    if not year:
+        return jsonify({"error": "Missing year"}), 400
+    holidays = llm.request_holidays_llm(prompt, year)
+    return jsonify(holidays)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

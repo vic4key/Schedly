@@ -96,7 +96,10 @@
         <div class="breaks-box mb-3 row gx-2">
             <label class="form-label col-md-5">Thời gian nghỉ (không bắt buộc)</label>
             <div id="breaks-list" class="col-md-7"></div>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="add-break"><i class="bi bi-plus-circle"></i> Thêm khoảng nghỉ</button>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="add-break"><i class="bi bi-plus-circle"></i> Thêm khoảng nghỉ</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="add-vn-holidays"><i class="bi bi-calendar-heart"></i> Thêm ngày nghỉ lễ phổ biến</button>
+            </div>
             <small class="text-muted">Có thể là ngày cuối tuần, ngày lễ, ngày tết, ...</small>
         </div>
         <div class="form-check mb-3 row gx-2">
@@ -344,6 +347,30 @@ function csvToTable(csv) {
     html += '</table>';
     return html;
 }
+
+// --- Thêm ngày nghỉ lễ phổ biến VN (gọi API backend) ---
+document.getElementById('add-vn-holidays').onclick = async function() {
+    let year = new Date().getFullYear();
+    const startVal = document.querySelector('input[name="start_time"]').value;
+    if (startVal) {
+        const m = startVal.match(/(\d{4})/);
+        if (m) year = parseInt(m[1]);
+    }
+    try {
+        const res = await fetch(`/api/holidays?year=${year}`);
+        if (!res.ok) throw new Error('Không lấy được danh sách ngày lễ');
+        const holidays = await res.json();
+        const breaksList = document.getElementById('breaks-list');
+        const exists = Array.from(breaksList.querySelectorAll('input[name="non_working_day_date_time_range"]')).map(i => i.value);
+        holidays.forEach(h => {
+            const range = `${h.date} 00:00-${h.date} 23:59`;
+            if (!exists.includes(range)) addBreakField(range);
+        });
+        saveModel(getModelFromForm());
+    } catch (e) {
+        alert('Lỗi khi lấy ngày nghỉ lễ: ' + e.message);
+    }
+};
 </script>
 </body>
 </html>
