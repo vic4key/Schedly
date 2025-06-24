@@ -116,7 +116,11 @@ def allocate_tasks_by_time_range(
                 slot_available = period_end - period_start
                 time_to_allocate = min(slot_available, remaining)
                 alloc_end = period_start + time_to_allocate
-                allocations.append(f"[{period_start.strftime('%Y/%m/%d %H:%M')}-{alloc_end.strftime('%H:%M')}]")
+                slot_duration_hrs = round(time_to_allocate.total_seconds() / 3600, 6)
+                allocations.append({
+                    "range": f"[{period_start.strftime('%Y/%m/%d %H:%M')}-{alloc_end.strftime('%H:%M')}]",
+                    "est": slot_duration_hrs
+                })
                 remaining -= time_to_allocate
                 current_dt = alloc_end
                 allocated_in_this_slot = True
@@ -127,16 +131,19 @@ def allocate_tasks_by_time_range(
         results.append({"name": name, "slots": allocations, "est": duration})
     return results
 
-def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: str = "detail") -> str:
+def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: str = "details") -> str:
     """
     Chuyển đổi kết quả sang chuỗi CSV với các cột: task_name, est, start_time, end_time.
     Nếu output_format="simple" thì mỗi task chỉ có 1 dòng, thời gian start là slot đầu tiên, end là slot cuối cùng.
     """
+    output_details = output_format and output_format == "details"
     rows = []
     for task in schedule_output:
         for slot in task['slots']:
-            slot = slot.strip("[]")
-            start_str, end_str = slot.split('-')
+            slot_range = slot["range"] if isinstance(slot, dict) else slot
+            slot_est = slot["est"] if output_details else task["est"]
+            slot_range_str = slot_range.strip("[]")
+            start_str, end_str = slot_range_str.split('-')
             start_time = start_str.strip()
             if len(end_str.strip()) == 5:
                 date_part = start_time.split()[0]
@@ -145,12 +152,12 @@ def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: s
                 end_time = end_str.strip()
             rows.append({
                 "task_name": task["name"],
-                "est": task["est"],
+                "est": slot_est,
                 "start_time": start_time,
                 "end_time": end_time
             })
 
-    if output_format and output_format == "simple":
+    if not output_details: # simple
         # Gom nhóm theo task_name, start là start_time đầu của dòng đầu, end là end_time cuối của dòng cuối
         from collections import OrderedDict
         grouped = OrderedDict()

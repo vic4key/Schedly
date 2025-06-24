@@ -35,7 +35,7 @@ def index():
             result = schedule_output
 
             # Xử lý option details
-            output_format = "detail" if request.form.get("output_format") == "detail" else "simple"
+            output_format = "details" if request.form.get("output_format") == "details" else "simple"
 
             csv_content = schedly.convert_schedule_output_to_csv(schedule_output, output_format=output_format)
         except Exception as ex:
