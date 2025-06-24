@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Schedly</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -9,92 +10,109 @@
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>⏰</text></svg>">
     <style>
+        body { background: #f4f6fb; }
+        .schedly-container { background: #fff; border-radius: 14px; box-shadow: 0 2px 16px #0001; padding: 32px 24px; margin-top: 32px; margin-bottom: 32px; max-width: 700px; width: 100%; }
+        .schedly-title { font-size:2.2rem; font-weight:bold; color:#0d6efd; letter-spacing:2px; margin-bottom: 8px; }
+        .schedly-desc { color: #555; font-size: 1.1rem; margin-bottom: 18px; }
+        .form-label { font-weight: 600; margin-bottom: 4px; }
+        .input-group-text { background: #f0f0f0; }
         .breaks-box { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
-        .break-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .break-row input[type="text"] {
-            flex: 1;
-            margin-right: 8px;
-        }
-        .break-row button {
-            color: #dc3545;
-            border-color: #dc3545;
-            min-width: 42px;
-            font-weight: bold;
-            font-size: 20px;
-            border-radius: 0.375rem;
-            padding: 0 12px;
-            background: #fff;
-            height: 38px;
-        }
+        .break-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .break-row input[type="text"] { flex: 1; margin-right: 8px; min-width: 0; }
+        .break-row button { color: #dc3545; border-color: #dc3545; min-width: 42px; font-weight: bold; font-size: 20px; border-radius: 0.375rem; padding: 0 12px; background: #fff; height: 38px; }
         .break-row button:hover { background: #f8d7da; }
-        #add-break { margin-top: 6px; margin-bottom: 6px;}
-        .form-label { font-weight: bold; margin-bottom: 2px; display: block;}
-        input[type="text"], textarea { box-sizing: border-box; width: 100%; }
-        .result { background: #f6f6f6; padding: 10px; border-radius: 4px; margin-top: 20px; }
-        pre { font-size: 14px; }
+        #add-break { margin-top: 6px; margin-bottom: 6px; }
+        textarea { box-sizing: border-box; width: 100%; resize: vertical; min-height: 90px; }
+        .result { background: #f6f6f6; padding: 18px; border-radius: 8px; margin-top: 28px; box-shadow: 0 2px 8px #0001; }
+        .table thead th { background: #e9ecef; font-weight: 600; }
+        .table-bordered td, .table-bordered th { border: 1px solid #dee2e6; }
+        .btn-primary { font-weight: 600; font-size: 1.1rem; padding: 8px 28px; }
+        .csv-table-responsive { width: 100%; overflow-x: auto; }
+        @media (max-width: 600px) {
+            .schedly-container { padding: 6vw 2vw 4vw 2vw; margin-top: 0; margin-bottom: 0; max-width: 100vw; border-radius: 0; }
+            .schedly-title { font-size: 1.2rem; }
+            .schedly-desc { font-size: 0.95rem; }
+            .result { padding: 7px; }
+            .input-group, .input-group .form-control, .input-group .input-group-text { width: 100%; font-size: 1.05rem; }
+            .input-group { flex-wrap: nowrap; }
+            .input-group-text { font-size: 1.1rem; padding: 0.375rem 0.7rem; }
+            .btn-primary { font-size: 1.05rem; padding: 7px 10px; }
+            .break-row { flex-direction: row; }
+            .break-row input[type="text"] { min-width: 0; font-size: 1rem; }
+            textarea { font-size: 1rem; }
+        }
+        @media (max-width: 400px) {
+            .schedly-title { font-size: 1rem; }
+            .schedly-desc { font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
-<div class="container mt-3" style="max-width: 700px;">
-    <div style="text-align:center; margin-bottom:10px;">
-        <span style="font-size:2.2rem; font-weight:bold; color:#0d6efd; letter-spacing:2px;">Schedly</span>
+<div class="container-fluid p-0">
+  <div class="schedly-container mx-auto">
+    <div class="text-center">
+        <span class="schedly-title">Schedly</span>
+        <div class="schedly-desc">Tự động lập lịch công việc và xuất file CSV. Đơn giản, nhanh chóng, hiệu quả.</div>
     </div>
     <form method="post" id="schedule-form" autocomplete="off">
-        <div class="mb-3">
-            <label class="form-label">Khung giờ làm việc trong ngày
-                <small>(Ví dụ: 08:00-12:00,13:00-17:00)</small>
-            </label>
-            <input type="text" class="form-control" name="working_day_time_range" required placeholder="VD: 08:00-12:00,13:00-17:00">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Thời điểm bắt đầu
-                <small>(Ví dụ: 2025/06/03 13:00)</small>
-            </label>
-            <input type="text" class="form-control flatpickr-datetime" name="start_time" required placeholder="VD: 2025/06/03 13:00">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Danh sách công việc
-                <small>(Mỗi dòng: tên task, thời lượng ước tính. VD: task 1, 2 hrs)</small>
-            </label>
-            <textarea class="form-control" name="task_list" rows="5" required></textarea>
-        </div>
-
-        <div class="breaks-box mb-3">
-            <label class="form-label">Các khoảng thời gian nghỉ (nếu có)</label>
-            <div id="breaks-list"></div>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="add-break">+ Thêm khoảng nghỉ</button>
-            <div style="font-size:13px; color:#666; margin-top:8px;">
-                Bạn có thể thêm nhiều khoảng nghỉ.<br>
-                Mỗi khoảng nhập theo dạng: YYYY/MM/DD HH:MM - YYYY/MM/DD HH:MM hoặc YYYY/MM/DD HH:MM đến YYYY/MM/DD HH:MM
+        <div class="mb-3 row gx-2">
+            <label class="form-label col-md-4">Khung giờ làm việc</label>
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                    <input type="text" class="form-control" name="working_day_time_range" required placeholder="VD: 08:00-12:00, 13:00-17:00">
+                </div>
+                <small class="text-muted">Ví dụ: 08:00-12:00, 13:00-17:00</small>
             </div>
         </div>
-
-        <!-- Output format option -->
-        <div class="form-check mb-3">
+        <div class="mb-3 row gx-2">
+            <label class="form-label col-md-4">Thời điểm bắt đầu</label>
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                    <input type="text" class="form-control flatpickr-datetime" name="start_time" required placeholder="VD: 2025/06/03 13:00">
+                </div>
+                <small class="text-muted">Chọn ngày giờ bắt đầu lập lịch</small>
+            </div>
+        </div>
+        <div class="mb-3 row gx-2">
+            <label class="form-label col-md-4">Danh sách công việc</label>
+            <div class="col-md-8">
+                <textarea class="form-control" name="task_list" rows="5" required placeholder="Mỗi dòng: tên task, thời lượng ước tính. VD: task 1, 2 hrs"></textarea>
+                <small class="text-muted">Mỗi dòng: tên task, thời lượng ước tính. VD: task 1, 2 hrs</small>
+            </div>
+        </div>
+        <div class="breaks-box mb-3 row gx-2">
+            <label class="form-label col-md-4">Các khoảng thời gian nghỉ (không bắt buộc)</label>
+            <div id="breaks-list" class="col-md-8"></div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="add-break"><i class="bi bi-plus-circle"></i> Thêm khoảng nghỉ</button>
+        </div>
+        <div class="form-check mb-3 row gx-2">
             <input class="form-check-input" type="checkbox" value="details" id="details-option" name="output_format">
             <label class="form-check-label" for="details-option">
                 Xuất chi tiết từng khoảng nhỏ (details)
             </label>
         </div>
-
-        <button type="submit" class="btn btn-primary">Tính lịch</button>
+        <div class="d-grid gap-2 mb-2 row gx-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-lightning-charge"></i> Tính lịch</button>
+        </div>
     </form>
-
     {% if csv_content %}
         <div class="result mt-4">
-            <b>Kết quả CSV (<a href="#" id="download-csv-link">Save to CSV</a>):</b>
+            <b>Kết quả CSV (<a href="#" id="download-csv-link">Lưu file CSV</a>):</b>
             <pre id="csv-result" style="display:none;">{{ csv_content }}</pre>
-            <div id="csv-table"></div>
+            <div class="csv-table-responsive"><div id="csv-table"></div></div>
         </div>
     {% endif %}
+  </div>
 </div>
-
+<footer class="text-center mt-4 mb-2" style="color:#888; font-size: 0.98rem;">
+  Vic P. with Vibe Coding
+</footer>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <!-- Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>

@@ -23,6 +23,7 @@ ENV/
 
 # Output files
 *.csv
+tests.py
 
 # OS files
 .DS_Store
