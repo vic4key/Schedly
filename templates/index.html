@@ -127,10 +127,9 @@
             </h2>
             <div id="collapseBreaks" class="accordion-collapse collapse" aria-labelledby="headingBreaks" data-bs-parent="#breakAccordion">
               <div class="accordion-body">
-                <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
+                <div class="d-flex flex-wrap gap-2 mb-2">
                   <button type="button" class="btn btn-outline-secondary" id="add-break"><i class="bi bi-plus-circle"></i> Thêm khoảng nghỉ</button>
                   <button type="button" class="btn btn-outline-secondary" id="add-holidays"><i class="bi bi-calendar-heart"></i> Thêm ngày nghỉ lễ phổ biến</button>
-                  <button type="button" class="btn btn-outline-danger ms-auto" id="clear-breaks"><i class="bi bi-trash"></i> Xóa hết</button>
                 </div>
                 <small class="text-muted d-block mb-2">Có thể là ngày cuối tuần, ngày lễ, ngày tết, ...</small>
                 <div id="breaks-list"></div>
@@ -215,7 +214,7 @@ function renderForm(model) {
     const breaksList = document.getElementById('breaks-list');
     breaksList.innerHTML = "";
     if (model.non_working_day_date_time_range && model.non_working_day_date_time_range.length > 0) {
-        model.non_working_day_date_time_range.forEach((val, idx) => addBreakField(val, `Khoảng nghỉ ${idx + 1}`));
+        model.non_working_day_date_time_range.forEach(val => addBreakField(val));
     }
     updateRemove();
     // task-desc-nl
@@ -225,12 +224,9 @@ function renderForm(model) {
 }
 
 // -- Breaks UI logic --
-function makeBreakInput(value = "", label = "") {
-    // Nếu label truyền vào khác rỗng thì hiển thị, còn không thì không hiện small text
-    let labelHtml = label ? `<small class='me-2' style='min-width:90px;'>${label}</small>` : '';
+function makeBreakInput(value="") {
     return `
-        <div class="break-row align-items-center">
-            ${labelHtml}
+        <div class="break-row">
             <input type="text" class="form-control break-flatpickr" name="non_working_day_date_time_range"
                 placeholder="YYYY/MM/DD HH:MM-YYYY/MM/DD HH:MM" value="${value}">
             <button type="button" class="btn btn-outline-danger ms-1 remove-break" title="Xóa">
@@ -245,9 +241,9 @@ function updateRemove() {
         btn.style.display = '';
     });
 }
-function addBreakField(value = "", label = "") {
+function addBreakField(value="") {
     const $div = document.createElement('div');
-    $div.innerHTML = makeBreakInput(value, label);
+    $div.innerHTML = makeBreakInput(value);
     const row = $div.firstElementChild;
     document.getElementById('breaks-list').appendChild(row);
     enableFlatpickrOnInput(row.querySelector('input[name="non_working_day_date_time_range"]'));
@@ -460,17 +456,6 @@ document.getElementById('gen-task-list-btn').onclick = async function() {
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-magic"></i> Tạo danh sách công việc';
-    }
-};
-
-// Thêm JS xử lý nút xóa hết breaks
-document.getElementById('clear-breaks').onclick = function() {
-    if (confirm('Bạn có chắc chắn muốn xóa hết tất cả các khoảng nghỉ?')) {
-        document.getElementById('breaks-list').innerHTML = '';
-        let model = getModelFromForm();
-        model.non_working_day_date_time_range = [];
-        saveModel(model);
-        updateRemove();
     }
 };
 </script>
