@@ -12,6 +12,7 @@ if https_proxy := os.environ.get("HTTPS_PROXY"):
 os.environ["no_proxy"] = "127.0.0.1,localhost,.local"
 
 llm_api = {
+    "provider": os.getenv("LLM_PROVIDER"),
     "url": os.getenv("LLM_API_URL"),
     "api_key": os.getenv("LLM_API_KEY"),
     "model": os.getenv("LLM_MODEL_NAME"),
@@ -28,6 +29,7 @@ def llm_chat(user_prompt: str, system_prompt: str = "You are a helpful assistant
                 base_url=llm_api["url"],
                 api_key=llm_api["api_key"],
             )
+            print(f"🤖 Using the LLM provider '{llm_api['provider']}' with the model '{llm_api['model']}' at '{llm_api['url']}'")
 
         if llm_model_suffix := os.getenv("LLM_MODEL_SUFFIX"):
             user_prompt += "\n"
@@ -52,7 +54,7 @@ def llm_chat(user_prompt: str, system_prompt: str = "You are a helpful assistant
             response = re.sub(r'<think>.*?</think>\n*', '', response, flags=re.DOTALL)
             response = response.strip()
     except Exception as e:
-        print("❌ Error:", str(e))
+        print("❌ LLM Error:", str(e))
         response = ""
     return response
 
