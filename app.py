@@ -45,13 +45,20 @@ def index():
     return render_template("index.html", result=result, csv_content=csv_content)
 
 @app.route("/api/holidays", methods=["GET"])
-def api_holidays_llm():
+def api_get_holidays():
     year = request.args.get("year", type=int)
     prompt = request.args.get("prompt", default="", type=str)
     if not year:
         return jsonify({"error": "Missing year"}), 400
-    holidays = llm.request_holidays_llm(prompt, year)
+    holidays = llm.llm_get_holidays(prompt, year)
     return jsonify(holidays)
+
+@app.route("/api/gen_task_list", methods=["POST"])
+def api_gen_task_list():
+    task_list = []
+    if text := request.json.get("text"):
+        task_list = llm.llm_gen_task_list(text)
+    return jsonify({"task_list": task_list})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

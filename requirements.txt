@@ -1,3 +1,5 @@
 Flask
+openai
 pandas
+python-dotenv
 python_dateutil
