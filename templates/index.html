@@ -245,8 +245,12 @@ document.getElementById('add-break').onclick = function() {
     saveModel(getModelFromForm());
 };
 document.getElementById('breaks-list').addEventListener('click', function(e){
-    if(e.target.classList.contains('remove-break')) {
-        e.target.closest('.break-row').remove();
+    // Nếu click vào nút hoặc icon bên trong nút xóa
+    let btn = e.target;
+    if (btn.classList.contains('remove-break') || btn.closest('.remove-break')) {
+        // Lấy đúng phần tử .break-row cha để xóa
+        let row = btn.closest('.break-row');
+        if (row) row.remove();
         updateRemove();
         // Nếu không còn input nào, lưu mảng rỗng
         let breaks = document.querySelectorAll('input[name="non_working_day_date_time_range"]');
