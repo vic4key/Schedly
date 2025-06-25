@@ -86,12 +86,37 @@
                 <small class="text-muted">Chọn ngày giờ bắt đầu lập lịch</small>
             </div>
         </div>
-        <div class="mb-3 row gx-2">
-            <label class="form-label col-md-4">Danh sách công việc</label>
-            <div class="col-md-8">
-                <textarea class="form-control" name="task_list" rows="5" required placeholder="Mỗi dòng: tên task, thời lượng ước tính. VD: task 1, 2 hrs"></textarea>
-                <small class="text-muted">Mỗi dòng: tên task, thời lượng ước tính. VD: task 1, 2 hrs</small>
+        <!-- Accordion cho nhập công việc -->
+        <div class="accordion mb-3" id="taskAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingDesc">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDesc" aria-expanded="true" aria-controls="collapseDesc">
+                Nhập mô tả công việc (AI-powered)
+              </button>
+            </h2>
+            <div id="collapseDesc" class="accordion-collapse collapse show" aria-labelledby="headingDesc" data-bs-parent="#taskAccordion">
+              <div class="accordion-body">
+                <textarea class="form-control" id="task-desc-nl" rows="3" placeholder="Nhập mô tả công việc bằng ngôn ngữ tự nhiên..."></textarea>
+                <button type="button" class="btn btn-outline-primary mt-2" id="gen-task-list-btn">
+                  <i class="bi bi-magic"></i> Tạo danh sách công việc
+                </button>
+                <small class="text-muted d-block mt-1">Nhập mô tả tự nhiên, ví dụ: 'tôi cần làm task 1 trong 2 giờ, task 2 trong 4 giờ, và task 3 trong 6 giờ'</small>
+              </div>
             </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingList">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseList" aria-expanded="false" aria-controls="collapseList">
+                Nhập danh sách công việc
+              </button>
+            </h2>
+            <div id="collapseList" class="accordion-collapse collapse" aria-labelledby="headingList" data-bs-parent="#taskAccordion">
+              <div class="accordion-body">
+                <textarea class="form-control" name="task_list" id="task-list-area" rows="5" required placeholder="Mỗi dòng: tên task, thời lượng ước tính. VD: task 1, 2 hrs"></textarea>
+                <small class="text-muted">Mỗi dòng: tên task, thời lượng ước tính. VD: task 1, 2 hrs</small>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="breaks-box mb-3 row gx-2">
             <label class="form-label col-md-5">Thời gian nghỉ (không bắt buộc)</label>
@@ -167,7 +192,8 @@ function getModelFromForm() {
         start_time: document.querySelector('input[name="start_time"]').value,
         task_list: document.querySelector('textarea[name="task_list"]').value,
         non_working_day_date_time_range:
-            Array.from(document.querySelectorAll('input[name="non_working_day_date_time_range"]')).map(i => i.value)
+            Array.from(document.querySelectorAll('input[name="non_working_day_date_time_range"]')).map(i => i.value),
+        task_desc_nl: document.getElementById('task-desc-nl') ? document.getElementById('task-desc-nl').value : ''
     };
 }
 function renderForm(model) {
@@ -181,6 +207,10 @@ function renderForm(model) {
         model.non_working_day_date_time_range.forEach(val => addBreakField(val));
     }
     updateRemove();
+    // task-desc-nl
+    if (document.getElementById('task-desc-nl')) {
+        document.getElementById('task-desc-nl').value = model.task_desc_nl || '';
+    }
 }
 
 // -- Breaks UI logic --
@@ -226,11 +256,12 @@ document.getElementById('breaks-list').addEventListener('click', function(e){
         saveModel(model);
     }
 });
-document.querySelector('input[name="working_day_time_range"]').addEventListener('input', () => saveModel(getModelFromForm()));
-document.querySelector('input[name="start_time"]').addEventListener('input', () => saveModel(getModelFromForm()));
-document.querySelector('textarea[name="task_list"]').addEventListener('input', () => saveModel(getModelFromForm()));
-document.getElementById('breaks-list').addEventListener('input', function(e){
-    if(e.target.name === 'non_working_day_date_time_range') saveModel(getModelFromForm());
+document.addEventListener('input', function(e) {
+    if (
+        e.target.matches('input[name="working_day_time_range"], input[name="start_time"], textarea[name="task_list"], textarea#task-desc-nl, input[name="non_working_day_date_time_range"]')
+    ) {
+        saveModel(getModelFromForm());
+    }
 });
 
 // -- Flatpickr for break ranges --
@@ -369,6 +400,46 @@ document.getElementById('add-vn-holidays').onclick = async function() {
         saveModel(getModelFromForm());
     } catch (e) {
         alert('Lỗi khi lấy ngày nghỉ lễ: ' + e.message);
+    }
+};
+
+// --- Sinh danh sách công việc từ mô tả tự nhiên (Accordion) ---
+document.getElementById('gen-task-list-btn').onclick = async function() {
+    const desc = document.getElementById('task-desc-nl').value.trim();
+    if (!desc) {
+        alert('Vui lòng nhập mô tả công việc!');
+        return;
+    }
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang tạo...';
+    try {
+        const res = await fetch('/api/gen_task_list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: desc })
+        });
+        if (!res.ok) throw new Error('Không thể tạo danh sách công việc');
+        const data = await res.json();
+        // Nếu data.task_list là list of strings, join bằng \n
+        if (Array.isArray(data.task_list)) {
+            document.getElementById('task-list-area').value = data.task_list.join('\n');
+        } else {
+            document.getElementById('task-list-area').value = data.task_list || '';
+        }
+        // Lưu lại vào localStorage nếu cần
+        saveModel(getModelFromForm());
+        // Mở accordion sang mục danh sách công việc
+        var collapseList = new bootstrap.Collapse(document.getElementById('collapseList'), {toggle: true});
+        var collapseDesc = new bootstrap.Collapse(document.getElementById('collapseDesc'), {toggle: false});
+        setTimeout(()=>{
+          document.getElementById('task-list-area').focus();
+        }, 400);
+    } catch (e) {
+        alert('Lỗi: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-magic"></i> Tạo danh sách công việc';
     }
 };
 </script>
