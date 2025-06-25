@@ -1,0 +1,22 @@
+POST http://127.0.0.1:5000/api/gen_task_list
+content-type: application/json
+
+{
+    "text": "tôi cần làm task 1 trong 2 giờ, task 2 trong 4 giờ, và task 3 trong 6 giờ"
+}
+
+
+POST http://127.0.0.1:5000/api/gen_task_list
+content-type: application/json
+
+{
+    "text": "this is a task 1\tVic P.\t\t\t12\nthis is a task 2\tVic P.\t\t\t2\nthis is a task 3\tVic P.\t\t\t2\nthis is a task 4\tVic P.\t\t\t2\nthis is a task 5\tVic P.\t\t\t6\nthis is a task 6\tVic P.\t\t\t2\nthis is a task 7\tVic P.\t\t\t2\nthis is a task 8\tVic P.\t\t\t2\nthis is a task 9\tVic P.\t\t\t2\nthis is a task 10\tVic P.\t\t\t2\nthis is a task 11\tVic P.\t\t\t2\nthis is a task 12\tVic P.\t\t\t2\nthis is a task 13\tVic P.\t\t\t2\nthis is a task 14\tVic P.\t\t\t2\nthis is a task 15\tVic P.\t\t\t2\nthis is a task 16\tVic P.\t\t\t2\nthis is a task 17\tVic P.\t\t\t2\nthis is a task 18\tVic P.\t\t\t8\nthis is a task 19\tVic P.\t\t\t8\nthis is a task 20\tVic P.\t\t\t2\nthis is a task 21\tVic P.\t\t\t2"
+}
+
+
+POST http://127.0.0.1:5000/api/gen_task_list
+content-type: application/json
+
+{
+    "text": "Do my laundry about 1 hours\nCancel milk delivery 0.5 hours\nClean fridge in 2 hours\nCheck passport in 30 minutes\nDo web check-in in 4 hours\nDownload a movie for the flight in 45 minutes\nRecharge mobile in 15 minutes\nPack swimsuit in 1 days"
+}
