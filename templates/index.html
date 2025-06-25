@@ -127,9 +127,10 @@
             </h2>
             <div id="collapseBreaks" class="accordion-collapse collapse" aria-labelledby="headingBreaks" data-bs-parent="#breakAccordion">
               <div class="accordion-body">
-                <div class="d-flex flex-wrap gap-2 mb-2">
+                <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
                   <button type="button" class="btn btn-outline-secondary" id="add-break"><i class="bi bi-plus-circle"></i> Thêm khoảng nghỉ</button>
                   <button type="button" class="btn btn-outline-secondary" id="add-holidays"><i class="bi bi-calendar-heart"></i> Thêm ngày nghỉ lễ phổ biến</button>
+                  <button type="button" class="btn btn-outline-danger ms-auto" id="clear-breaks"><i class="bi bi-trash"></i> Xóa hết</button>
                 </div>
                 <small class="text-muted d-block mb-2">Có thể là ngày cuối tuần, ngày lễ, ngày tết, ...</small>
                 <div id="breaks-list"></div>
@@ -456,6 +457,17 @@ document.getElementById('gen-task-list-btn').onclick = async function() {
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-magic"></i> Tạo danh sách công việc';
+    }
+};
+
+// Thêm JS xử lý nút xóa hết breaks
+document.getElementById('clear-breaks').onclick = function() {
+    if (confirm('Bạn có chắc chắn muốn xóa hết tất cả các khoảng nghỉ?')) {
+        document.getElementById('breaks-list').innerHTML = '';
+        let model = getModelFromForm();
+        model.non_working_day_date_time_range = [];
+        saveModel(model);
+        updateRemove();
     }
 };
 </script>
