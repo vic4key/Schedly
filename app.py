@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import schedly
 import llm
 
 app = Flask(__name__)
+app.secret_key = 'your-very-secret-key-1234567890'  # Thay bằng chuỗi bí mật mạnh hơn khi triển khai thực tế
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -39,9 +40,15 @@ def index():
             output_format = "details" if request.form.get("output_format") == "details" else "simple"
 
             csv_content = schedly.convert_schedule_output_to_csv(schedule_output, output_format=output_format)
+            # Sau khi render, chuyển hướng về GET để tránh hiển thị lại csv_content khi refresh
+            session['csv_content'] = csv_content
+            session['result'] = result
+            return redirect(url_for('index'))
         except Exception as ex:
             result = f"Lỗi: {ex}"
-
+    # Lấy csv_content từ session nếu có, sau đó xóa khỏi session
+    csv_content = session.pop('csv_content', None)
+    result = session.pop('result', None)
     return render_template("index.html", result=result, csv_content=csv_content)
 
 @app.route("/api/holidays", methods=["GET"])
