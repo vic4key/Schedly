@@ -233,14 +233,17 @@ function renderForm(model) {
 }
 
 // -- Breaks UI logic --
-function makeBreakInput(value="") {
+function makeBreakInput(value="", label="Ngày nghỉ tùy chỉnh") {
     return `
-        <div class="break-row">
-            <input type="text" class="form-control break-flatpickr" name="non_working_day_date_time_range"
-                placeholder="YYYY/MM/DD HH:MM-YYYY/MM/DD HH:MM" value="${value}">
-            <button type="button" class="btn btn-outline-danger ms-1 remove-break" title="Xóa">
-                <i class="bi bi-trash"></i>
-            </button>
+        <div class="break-row flex-column align-items-stretch mb-2">
+            <small class="form-text text-muted mb-1">${label}</small>
+            <div class="d-flex align-items-center">
+                <input type="text" class="form-control break-flatpickr" name="non_working_day_date_time_range"
+                    placeholder="YYYY/MM/DD HH:MM-YYYY/MM/DD HH:MM" value="${value}">
+                <button type="button" class="btn btn-outline-danger ms-1 remove-break" title="Xóa">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
         </div>
     `;
 }
@@ -250,9 +253,9 @@ function updateRemove() {
         btn.style.display = '';
     });
 }
-function addBreakField(value="") {
+function addBreakField(value="", label="Ngày nghỉ tùy chỉnh") {
     const $div = document.createElement('div');
-    $div.innerHTML = makeBreakInput(value);
+    $div.innerHTML = makeBreakInput(value, label);
     const row = $div.firstElementChild;
     document.getElementById('breaks-list').appendChild(row);
     enableFlatpickrOnInput(row.querySelector('input[name="non_working_day_date_time_range"]'));
@@ -430,7 +433,7 @@ document.getElementById('add-holidays').onclick = async function() {
         const exists = Array.from(breaksList.querySelectorAll('input[name="non_working_day_date_time_range"]')).map(i => i.value);
         holidays.forEach(h => {
             const range = `${h.date} 00:00-${h.date} 23:59`;
-            if (!exists.includes(range)) addBreakField(range);
+            if (!exists.includes(range)) addBreakField(range, h.name || 'Ngày nghỉ lễ');
         });
         saveModel(getModelFromForm());
     } catch (e) {

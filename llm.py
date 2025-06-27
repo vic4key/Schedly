@@ -76,15 +76,16 @@ def llm_get_holidays(prompt: str, year: int) -> list:
     # MOCK: trả về mẫu
     return [
         {"name": "Tết Dương lịch", "date": f"{year}/01/01"},
+        {"name": "Tết Nguyên Đán", "date": f"{year}/02/10"},
         {"name": "Giỗ tổ Hùng Vương", "date": f"{year}/04/18"},
-        {"name": "30/4", "date": f"{year}/04/30"},
-        {"name": "1/5", "date": f"{year}/05/01"},
-        {"name": "2/9", "date": f"{year}/09/02"},
-        {"name": "Tết Nguyên Đán", "date": f"{year}/01/28"},
-        {"name": "Tết Nguyên Đán", "date": f"{year}/01/29"},
-        {"name": "Tết Nguyên Đán", "date": f"{year}/01/30"},
-        {"name": "Tết Nguyên Đán", "date": f"{year}/01/31"},
-        {"name": "Tết Nguyên Đán", "date": f"{year}/02/01"},
+        {"name": "Ngày Giải phóng miền Nam", "date": f"{year}/04/30"},
+        {"name": "Ngày Quốc tế Lao động", "date": f"{year}/05/01"},
+        {"name": "Ngày Quốc khánh", "date": f"{year}/09/02"},
+        {"name": "Ngày Thầy thuốc Việt Nam", "date": f"{year}/02/27"},
+        {"name": "Ngày Quốc tế Phụ nữ", "date": f"{year}/03/08"},
+        {"name": "Ngày Quốc tế Thiếu nhi", "date": f"{year}/06/01"},
+        {"name": "Ngày Nhà giáo Việt Nam", "date": f"{year}/11/20"},
+        {"name": "Ngày thành lập Quân đội Nhân dân Việt Nam", "date": f"{year}/12/22"},
     ]
 
 def llm_gen_task_list(text: str) -> List[str]:

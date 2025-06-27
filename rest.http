@@ -20,3 +20,6 @@ content-type: application/json
 {
     "text": "Do my laundry about 1 hours\nCancel milk delivery 0.5 hours\nClean fridge in 2 hours\nCheck passport in 30 minutes\nDo web check-in in 4 hours\nDownload a movie for the flight in 45 minutes\nRecharge mobile in 15 minutes\nPack swimsuit in 1 days"
 }
+
+
+GET http://127.0.0.1:5000/api/holidays?year=2025
