@@ -1,5 +1,6 @@
 import os, re
 from datetime import date, timedelta
+from calendar import monthrange
 from typing import List
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -62,28 +63,19 @@ def llm_chat(user_prompt: str, system_prompt: str = "You are a helpful assistant
 # Ví dụ: sử dụng OpenAI GPT (có thể thay thế bằng provider khác)
 # Hàm này mô phỏng, bạn cần điền API key và endpoint thực tế nếu dùng thật
 
-def llm_get_holidays(year: int) -> list:
+def llm_get_holidays(year: int, months: int = None) -> list:
     """
     Get a list of popular public holidays in Vietnam for a given year.
-    Only holidays with a valid date and occurring today or later are included.
+    Only holidays with a valid date and occurring today or later are included, and filtered by months ahead if months is not None.
 
     Args:
         year (int): The year for which to retrieve the list of holidays.
+        months (int|None): Number of months ahead to include (None = full year).
 
     Returns:
         list: A list of popular public holidays in Vietnam.
         Each containing 'name' (holiday name) and 'date' (string in yyyy/mm/dd format).
     """
-    def parse_date_flexible(d):
-        try:
-            # Hỗ trợ cả yyyy/m/d, yyyy/mm/dd, yyyy-m-d, yyyy-mm-dd
-            parts = d.replace('-', '/').split('/')
-            if len(parts) != 3:
-                return None
-            y, m, day = map(int, parts)
-            return date(y, m, day)
-        except Exception: return None
-
     holidays = [
         {"name": "Tết Dương lịch", "date": "2025/01/01"},  # 🎉 Được nghỉ
         {"name": "Tết Nguyên Đán", "date": "2025/01/27"},  # 🎉 Được nghỉ (bắt đầu kỳ nghỉ Tết Âm lịch)
@@ -101,11 +93,34 @@ def llm_get_holidays(year: int) -> list:
         # {"name": "Ngày thành lập Quân đội Nhân dân Việt Nam", "date": "2025/12/22"},  # ❌ Không nghỉ
     ]
 
-    # Add all Saturdays and Sundays of the year as holidays (easier to read)
+    def parse_date_flexible(d):
+        try:
+            parts = d.replace('-', '/').split('/')
+            if len(parts) != 3:
+                return None
+            y, m, day = map(int, parts)
+            return date(y, m, day)
+        except Exception: return None
+
+    today = date.today()
+
+    # Determine the end date for holidays (max: end of year).
+    end_date = date(year, 12, 31)
+    if isinstance(months, int) and months > 0:
+        m = today.month + months
+        y = today.year
+        if m > 12:
+            y += (m - 1) // 12
+            m = (m - 1) % 12 + 1
+        last_day = monthrange(y, m)[1]
+        end_date = date(y, m, last_day)
+        if end_date.year > year:
+            end_date = date(year, 12, 31)
+
+    # Add all Saturdays and Sundays from today to end_date as holidays
     weekends = []
-    d = date(year, 1, 1)
-    last = date(year, 12, 31)
-    while d <= last:
+    d = today
+    while d <= end_date:
         if d.weekday() == 5:
             weekends.append({"name": "Cuối tuần (T7)", "date": d.strftime("%Y/%m/%d")})
         elif d.weekday() == 6:
@@ -113,11 +128,10 @@ def llm_get_holidays(year: int) -> list:
         d += timedelta(days=1)
     holidays.extend(weekends)
 
-    # To filter and sort valid holidays, only include holidays from today onwards
-    today = date.today()
+    # Sort holidays by date, then filter to only include those from today to end_date
     holidays = [h for h in holidays if parse_date_flexible(h['date'])]
     holidays.sort(key=lambda h: parse_date_flexible(h['date']))
-    holidays = [h for h in holidays if parse_date_flexible(h['date']) >= today]
+    holidays = [h for h in holidays if today <= parse_date_flexible(h['date']) <= end_date]
 
     return holidays
 

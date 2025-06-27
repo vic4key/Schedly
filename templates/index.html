@@ -130,7 +130,17 @@
                 <div class="d-flex flex-wrap gap-2 mb-2 align-items-center justify-content-between">
                   <div class="d-flex gap-2">
                     <button type="button" class="btn btn-outline-secondary" id="add-break"><i class="bi bi-plus-circle"></i> Thêm</button>
-                    <button type="button" class="btn btn-outline-secondary" id="add-holidays"><i class="bi bi-calendar-heart"></i> Tự động gợi ý</button>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-outline-secondary dropdown-toggle" id="add-holidays" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-calendar-heart"></i> Tự động gợi ý
+                      </button>
+                      <ul class="dropdown-menu" id="add-holidays-menu">
+                        <li><a class="dropdown-item" href="#" data-months="1">1 tháng tới</a></li>
+                        <li><a class="dropdown-item" href="#" data-months="3">3 tháng tới</a></li>
+                        <li><a class="dropdown-item" href="#" data-months="6">6 tháng tới</a></li>
+                        <li><a class="dropdown-item" href="#" data-months="12">Hết năm</a></li>
+                      </ul>
+                    </div>
                   </div>
                   <button type="button" class="btn btn-outline-danger ms-auto" id="clear-breaks"><i class="bi bi-x-circle"></i> Xóa hết</button>
                 </div>
@@ -418,28 +428,32 @@ function csvToTable(csv) {
 }
 
 // --- Thêm ngày nghỉ lễ phổ biến VN (gọi API backend) ---
-document.getElementById('add-holidays').onclick = async function() {
-    let year = new Date().getFullYear();
-    const startVal = document.querySelector('input[name="start_time"]').value;
-    if (startVal) {
-        const m = startVal.match(/(\d{4})/);
-        if (m) year = parseInt(m[1]);
-    }
-    try {
-        const res = await fetch(`/api/holidays?year=${year}`);
-        if (!res.ok) throw new Error('Không lấy được danh sách ngày lễ');
-        const holidays = await res.json();
-        const breaksList = document.getElementById('breaks-list');
-        const exists = Array.from(breaksList.querySelectorAll('input[name="non_working_day_date_time_range"]')).map(i => i.value);
-        holidays.forEach(h => {
-            const range = `${h.date} 00:00-${h.date} 23:59`;
-            if (!exists.includes(range)) addBreakField(range, h.name || 'Ngày nghỉ lễ');
-        });
-        saveModel(getModelFromForm());
-    } catch (e) {
-        alert('Lỗi khi lấy ngày nghỉ lễ: ' + e.message);
-    }
-};
+document.querySelectorAll('#add-holidays-menu .dropdown-item').forEach(function(item) {
+    item.onclick = async function(e) {
+        e.preventDefault();
+        let months = parseInt(this.getAttribute('data-months'));
+        let year = new Date().getFullYear();
+        const startVal = document.querySelector('input[name="start_time"]').value;
+        if (startVal) {
+            const m = startVal.match(/(\d{4})/);
+            if (m) year = parseInt(m[1]);
+        }
+        try {
+            const res = await fetch(`/api/holidays?year=${year}&months=${months}`);
+            if (!res.ok) throw new Error('Không lấy được danh sách ngày lễ');
+            const holidays = await res.json();
+            const breaksList = document.getElementById('breaks-list');
+            const exists = Array.from(breaksList.querySelectorAll('input[name="non_working_day_date_time_range"]')).map(i => i.value);
+            holidays.forEach(h => {
+                const range = `${h.date} 00:00-${h.date} 23:59`;
+                if (!exists.includes(range)) addBreakField(range, h.name || 'Ngày nghỉ lễ');
+            });
+            saveModel(getModelFromForm());
+        } catch (e) {
+            alert('Lỗi khi lấy ngày nghỉ lễ: ' + e.message);
+        }
+    };
+});
 
 // --- Sinh danh sách công việc từ mô tả tự nhiên (Accordion) ---
 document.getElementById('gen-task-list-btn').onclick = async function() {
