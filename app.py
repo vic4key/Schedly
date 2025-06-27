@@ -58,10 +58,9 @@ def index_post():
 @app.route("/api/holidays", methods=["GET"])
 def api_get_holidays():
     year = request.args.get("year", type=int)
-    prompt = request.args.get("prompt", default="", type=str)
     if not year:
         return jsonify({"error": "Missing year"}), 400
-    holidays = llm.llm_get_holidays(prompt, year)
+    holidays = llm.llm_get_holidays(year)
     return jsonify(holidays)
 
 @app.route("/api/gen_task_list", methods=["POST"])

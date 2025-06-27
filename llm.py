@@ -61,32 +61,33 @@ def llm_chat(user_prompt: str, system_prompt: str = "You are a helpful assistant
 # Ví dụ: sử dụng OpenAI GPT (có thể thay thế bằng provider khác)
 # Hàm này mô phỏng, bạn cần điền API key và endpoint thực tế nếu dùng thật
 
-def llm_get_holidays(prompt: str, year: int) -> list:
+def llm_get_holidays(year: int) -> list:
     """
-    Gửi prompt tới LLM provider để lấy danh sách ngày nghỉ lễ cho năm tương ứng.
-    Trả về list dict: [{"name": ..., "date": ...}, ...]
-    """
-    # Ví dụ prompt: "Liệt kê các ngày nghỉ lễ lớn của Việt Nam năm 2025, trả về dạng JSON [{name, date}] với date dạng YYYY/MM/DD"
-    # Dưới đây là mô phỏng, bạn có thể thay bằng call thực tế tới OpenAI hoặc provider khác
-    # Nếu dùng OpenAI:
-    # response = openai.ChatCompletion.create(...)
-    # holidays = ...
-    # return holidays
+    Trả về danh sách các ngày nghỉ lễ phổ biến ở Việt Nam cho một năm cụ thể.
 
-    # MOCK: trả về mẫu
-    return [
-        {"name": "Tết Dương lịch", "date": f"{year}/01/01"},
-        {"name": "Tết Nguyên Đán", "date": f"{year}/02/10"},
-        {"name": "Giỗ tổ Hùng Vương", "date": f"{year}/04/18"},
-        {"name": "Ngày Giải phóng miền Nam", "date": f"{year}/04/30"},
-        {"name": "Ngày Quốc tế Lao động", "date": f"{year}/05/01"},
-        {"name": "Ngày Quốc khánh", "date": f"{year}/09/02"},
-        {"name": "Ngày Thầy thuốc Việt Nam", "date": f"{year}/02/27"},
-        {"name": "Ngày Quốc tế Phụ nữ", "date": f"{year}/03/08"},
-        {"name": "Ngày Quốc tế Thiếu nhi", "date": f"{year}/06/01"},
-        {"name": "Ngày Nhà giáo Việt Nam", "date": f"{year}/11/20"},
-        {"name": "Ngày thành lập Quân đội Nhân dân Việt Nam", "date": f"{year}/12/22"},
+    Args:
+        year (int): Năm cần lấy danh sách ngày nghỉ lễ.
+
+    Returns:
+        list: Danh sách các ngày nghỉ lễ, mỗi phần tử là dict gồm 'name' (tên ngày lễ) và 'date' (ngày/tháng/năm).
+    """
+    holidays = [
+        {"name": "Tết Dương lịch", "date": "2025/01/01"},  # 🎉 Được nghỉ
+        {"name": "Tết Nguyên Đán", "date": "2025/01/27"},  # 🎉 Được nghỉ (bắt đầu kỳ nghỉ Tết Âm lịch)
+        {"name": "Giỗ tổ Hùng Vương", "date": "2025/04/07"},  # 🎉 Được nghỉ
+        {"name": "Ngày Giải phóng miền Nam", "date": "2025/04/30"},  # 🎉 Được nghỉ
+        {"name": "Ngày Quốc tế Lao động", "date": "2025/05/01"},  # 🎉 Được nghỉ
+        {"name": "Ngày nghỉ hoán đổi (nghỉ)", "date": "2025/05/02"},  # 🎉 Được nghỉ (thay cho làm bù 26/04)
+        {"name": "Ngày nghỉ hoán đổi (làm bù)", "date": "2025/04/26"},  # ❌ Đi làm bù
+        {"name": "Ngày Quốc khánh", "date": "2025/09/02"},  # 🎉 Được nghỉ
+        {"name": "Ngày Quốc khánh (nghỉ thêm)", "date": "2025/09/01"},  # 🎉 Được nghỉ
+        # {"name": "Ngày Thầy thuốc Việt Nam", "date": "2025/02/27"},  # ❌ Không nghỉ
+        # {"name": "Ngày Quốc tế Phụ nữ", "date": "2025/03/08"},  # ❌ Không nghỉ
+        # {"name": "Ngày Quốc tế Thiếu nhi", "date": "2025/06/01"},  # ❌ Không nghỉ
+        # {"name": "Ngày Nhà giáo Việt Nam", "date": "2025/11/20"},  # ❌ Không nghỉ
+        # {"name": "Ngày thành lập Quân đội Nhân dân Việt Nam", "date": "2025/12/22"},  # ❌ Không nghỉ
     ]
+    return holidays
 
 def llm_gen_task_list(text: str) -> List[str]:
     """
