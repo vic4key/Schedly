@@ -1,5 +1,5 @@
 import os, re
-from datetime import date
+from datetime import date, timedelta
 from typing import List
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -83,6 +83,7 @@ def llm_get_holidays(year: int) -> list:
             y, m, day = map(int, parts)
             return date(y, m, day)
         except Exception: return None
+
     holidays = [
         {"name": "Tết Dương lịch", "date": "2025/01/01"},  # 🎉 Được nghỉ
         {"name": "Tết Nguyên Đán", "date": "2025/01/27"},  # 🎉 Được nghỉ (bắt đầu kỳ nghỉ Tết Âm lịch)
@@ -99,10 +100,25 @@ def llm_get_holidays(year: int) -> list:
         # {"name": "Ngày Nhà giáo Việt Nam", "date": "2025/11/20"},  # ❌ Không nghỉ
         # {"name": "Ngày thành lập Quân đội Nhân dân Việt Nam", "date": "2025/12/22"},  # ❌ Không nghỉ
     ]
+
+    # Add all Saturdays and Sundays of the year as holidays (easier to read)
+    weekends = []
+    d = date(year, 1, 1)
+    last = date(year, 12, 31)
+    while d <= last:
+        if d.weekday() == 5:
+            weekends.append({"name": "Cuối tuần (T7)", "date": d.strftime("%Y/%m/%d")})
+        elif d.weekday() == 6:
+            weekends.append({"name": "Cuối tuần (CN)", "date": d.strftime("%Y/%m/%d")})
+        d += timedelta(days=1)
+    holidays.extend(weekends)
+
+    # To filter and sort valid holidays, only include holidays from today onwards
     today = date.today()
     holidays = [h for h in holidays if parse_date_flexible(h['date'])]
     holidays.sort(key=lambda h: parse_date_flexible(h['date']))
     holidays = [h for h in holidays if parse_date_flexible(h['date']) >= today]
+
     return holidays
 
 def llm_gen_task_list(text: str) -> List[str]:
