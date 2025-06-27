@@ -127,9 +127,12 @@
             </h2>
             <div id="collapseBreaks" class="accordion-collapse collapse" aria-labelledby="headingBreaks" data-bs-parent="#breakAccordion">
               <div class="accordion-body">
-                <div class="d-flex flex-wrap gap-2 mb-2">
-                  <button type="button" class="btn btn-outline-secondary" id="add-break"><i class="bi bi-plus-circle"></i> Thêm khoảng nghỉ</button>
-                  <button type="button" class="btn btn-outline-secondary" id="add-holidays"><i class="bi bi-calendar-heart"></i> Thêm ngày nghỉ lễ phổ biến</button>
+                <div class="d-flex flex-wrap gap-2 mb-2 align-items-center justify-content-between">
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" id="add-break"><i class="bi bi-plus-circle"></i> Thêm</button>
+                    <button type="button" class="btn btn-outline-secondary" id="add-holidays"><i class="bi bi-calendar-heart"></i> Tự động gợi ý</button>
+                  </div>
+                  <button type="button" class="btn btn-outline-danger ms-auto" id="clear-breaks"><i class="bi bi-x-circle"></i> Xóa hết</button>
                 </div>
                 <small class="text-muted d-block mb-2">Có thể là ngày cuối tuần, ngày lễ, ngày tết, ...</small>
                 <div id="breaks-list"></div>
@@ -260,6 +263,16 @@ function addBreakField(value="") {
 document.getElementById('add-break').onclick = function() {
     addBreakField();
     saveModel(getModelFromForm());
+};
+document.getElementById('clear-breaks').onclick = function() {
+    if (confirm('Bạn có chắc chắn muốn xóa hết tất cả khoảng nghỉ?')) {
+        // Xóa toàn bộ UI
+        document.getElementById('breaks-list').innerHTML = '';
+        // Xóa model
+        let model = getModelFromForm();
+        model.non_working_day_date_time_range = [];
+        saveModel(model);
+    }
 };
 document.getElementById('breaks-list').addEventListener('click', function(e){
     // Nếu click vào nút hoặc icon bên trong nút xóa
