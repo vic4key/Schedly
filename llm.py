@@ -1,4 +1,5 @@
 import os, re
+from datetime import date
 from typing import List
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -63,14 +64,25 @@ def llm_chat(user_prompt: str, system_prompt: str = "You are a helpful assistant
 
 def llm_get_holidays(year: int) -> list:
     """
-    Trả về danh sách các ngày nghỉ lễ phổ biến ở Việt Nam cho một năm cụ thể.
+    Get a list of popular public holidays in Vietnam for a given year.
+    Only holidays with a valid date and occurring today or later are included.
 
     Args:
-        year (int): Năm cần lấy danh sách ngày nghỉ lễ.
+        year (int): The year for which to retrieve the list of holidays.
 
     Returns:
-        list: Danh sách các ngày nghỉ lễ, mỗi phần tử là dict gồm 'name' (tên ngày lễ) và 'date' (ngày/tháng/năm).
+        list: A list of popular public holidays in Vietnam.
+        Each containing 'name' (holiday name) and 'date' (string in yyyy/mm/dd format).
     """
+    def parse_date_flexible(d):
+        try:
+            # Hỗ trợ cả yyyy/m/d, yyyy/mm/dd, yyyy-m-d, yyyy-mm-dd
+            parts = d.replace('-', '/').split('/')
+            if len(parts) != 3:
+                return None
+            y, m, day = map(int, parts)
+            return date(y, m, day)
+        except Exception: return None
     holidays = [
         {"name": "Tết Dương lịch", "date": "2025/01/01"},  # 🎉 Được nghỉ
         {"name": "Tết Nguyên Đán", "date": "2025/01/27"},  # 🎉 Được nghỉ (bắt đầu kỳ nghỉ Tết Âm lịch)
@@ -87,6 +99,10 @@ def llm_get_holidays(year: int) -> list:
         # {"name": "Ngày Nhà giáo Việt Nam", "date": "2025/11/20"},  # ❌ Không nghỉ
         # {"name": "Ngày thành lập Quân đội Nhân dân Việt Nam", "date": "2025/12/22"},  # ❌ Không nghỉ
     ]
+    today = date.today()
+    holidays = [h for h in holidays if parse_date_flexible(h['date'])]
+    holidays.sort(key=lambda h: parse_date_flexible(h['date']))
+    holidays = [h for h in holidays if parse_date_flexible(h['date']) >= today]
     return holidays
 
 def llm_gen_task_list(text: str) -> List[str]:
