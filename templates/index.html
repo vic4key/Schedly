@@ -128,7 +128,7 @@
             <div id="collapseBreaks" class="accordion-collapse collapse" aria-labelledby="headingBreaks" data-bs-parent="#breakAccordion">
               <div class="accordion-body">
                 <div class="d-flex flex-wrap gap-2 mb-2 align-items-center justify-content-between">
-                  <div class="d-flex gap-2">
+                  <div class="d-flex gap-2 align-items-center">
                     <button type="button" class="btn btn-outline-secondary" id="add-break"><i class="bi bi-plus-circle"></i> Thêm</button>
                     <div class="btn-group">
                       <button type="button" class="btn btn-outline-secondary dropdown-toggle" id="add-holidays" data-bs-toggle="dropdown" aria-expanded="false">
@@ -140,6 +140,10 @@
                         <li><a class="dropdown-item" href="#" data-months="6">6 tháng tới</a></li>
                         <li><a class="dropdown-item" href="#" data-months="12">Hết năm</a></li>
                       </ul>
+                    </div>
+                    <div class="form-check ms-2">
+                      <input class="form-check-input" type="checkbox" id="include-weekends-checkbox">
+                      <label class="form-check-label" for="include-weekends-checkbox">Tính cả cuối tuần (T7, CN)</label>
                     </div>
                   </div>
                   <button type="button" class="btn btn-outline-danger ms-auto" id="clear-breaks"><i class="bi bi-x-circle"></i> Xóa hết</button>
@@ -451,13 +455,24 @@ document.querySelectorAll('#add-holidays-menu .dropdown-item').forEach(function(
             const m = startVal.match(/(\d{4})/);
             if (m) year = parseInt(m[1]);
         }
+        // Lấy trạng thái checkbox cuối tuần
+        const includeWeekends = document.getElementById('include-weekends-checkbox').checked;
         // Confirm và xóa hết các break hiện tại trước khi thêm mới
         if (!clearAllBreaksWithConfirm()) return;
         try {
-            const res = await fetch(`/api/holidays?year=${year}&months=${months}`);
+            const res = await fetch(`/api/holidays?year=${year}&months=${months}&include_weekends=${includeWeekends}`);
             if (!res.ok) throw new Error('Không lấy được danh sách ngày lễ');
             const holidays = await res.json();
             const breaksList = document.getElementById('breaks-list');
+            // Nếu không có ngày nghỉ nào, hiển thị thông báo
+            if (!holidays || holidays.length === 0) {
+                const msg = document.createElement('div');
+                msg.className = 'alert alert-info mt-2';
+                msg.textContent = 'Không có ngày nghỉ nào sắp tới.';
+                breaksList.appendChild(msg);
+                setTimeout(() => { if (msg.parentNode) msg.parentNode.removeChild(msg); }, 3500);
+                return;
+            }
             const exists = Array.from(breaksList.querySelectorAll('input[name="non_working_day_date_time_range"]')).map(i => i.value);
             holidays.forEach(h => {
                 const range = `${h.date} 00:00-${h.date} 23:59`;

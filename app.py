@@ -58,10 +58,11 @@ def index_post():
 @app.route("/api/holidays", methods=["GET"])
 def api_get_holidays():
     year = request.args.get("year", type=int)
-    months = request.args.get("months", default=12, type=int)
+    months = request.args.get("months", default=None, type=int)
+    include_weekends = request.args.get("include_weekends", default="false").lower() == "true"
     if not year:
         return jsonify({"error": "Missing year"}), 400
-    holidays = llm.llm_get_holidays(year, months)
+    holidays = llm.llm_get_holidays(year, months, include_weekends)
     return jsonify(holidays)
 
 @app.route("/api/gen_task_list", methods=["POST"])

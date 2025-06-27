@@ -60,10 +60,7 @@ def llm_chat(user_prompt: str, system_prompt: str = "You are a helpful assistant
         response = ""
     return response
 
-# Ví dụ: sử dụng OpenAI GPT (có thể thay thế bằng provider khác)
-# Hàm này mô phỏng, bạn cần điền API key và endpoint thực tế nếu dùng thật
-
-def llm_get_holidays(year: int, months: int = None) -> list:
+def llm_get_holidays(year: int, months: int = None, include_weekends: bool = False) -> list:
     """
     Get a list of popular public holidays in Vietnam for a given year.
     Only holidays with a valid date and occurring today or later are included, and filtered by months ahead if months is not None.
@@ -71,6 +68,7 @@ def llm_get_holidays(year: int, months: int = None) -> list:
     Args:
         year (int): The year for which to retrieve the list of holidays.
         months (int|None): Number of months ahead to include (None = full year).
+        include_weekends (bool): Whether to include weekends (Saturday, Sunday) as holidays.
 
     Returns:
         list: A list of popular public holidays in Vietnam.
@@ -117,16 +115,17 @@ def llm_get_holidays(year: int, months: int = None) -> list:
         if end_date.year > year:
             end_date = date(year, 12, 31)
 
-    # Add all Saturdays and Sundays from today to end_date as holidays
-    weekends = []
-    d = today
-    while d <= end_date:
-        if d.weekday() == 5:
-            weekends.append({"name": "Cuối tuần (T7)", "date": d.strftime("%Y/%m/%d")})
-        elif d.weekday() == 6:
-            weekends.append({"name": "Cuối tuần (CN)", "date": d.strftime("%Y/%m/%d")})
-        d += timedelta(days=1)
-    holidays.extend(weekends)
+    # Add all Saturdays and Sundays from today to end_date as holidays if include weekends
+    if include_weekends:
+        weekends = []
+        d = today
+        while d <= end_date:
+            if d.weekday() == 5:
+                weekends.append({"name": "Cuối tuần (T7)", "date": d.strftime("%Y/%m/%d")})
+            elif d.weekday() == 6:
+                weekends.append({"name": "Cuối tuần (CN)", "date": d.strftime("%Y/%m/%d")})
+            d += timedelta(days=1)
+        holidays.extend(weekends)
 
     # Sort holidays by date, then filter to only include those from today to end_date
     holidays = [h for h in holidays if parse_date_flexible(h['date'])]
