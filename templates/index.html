@@ -262,6 +262,12 @@ function updateRemove() {
     document.querySelectorAll('.remove-break').forEach(btn => {
         btn.style.display = '';
     });
+    // Disable nút Xóa hết nếu không có break nào
+    const clearBtn = document.getElementById('clear-breaks');
+    const breaksCount = document.getElementById('breaks-list').children.length;
+    if (clearBtn) {
+        clearBtn.disabled = breaksCount === 0;
+    }
 }
 function addBreakField(value="", label="Ngày nghỉ tùy chỉnh") {
     const $div = document.createElement('div');
@@ -271,6 +277,20 @@ function addBreakField(value="", label="Ngày nghỉ tùy chỉnh") {
     enableFlatpickrOnInput(row.querySelector('input[name="non_working_day_date_time_range"]'));
     updateRemove();
 }
+// Hàm confirm và xóa hết break
+function clearAllBreaksWithConfirm() {
+    if (document.getElementById('breaks-list').children.length > 0) {
+        if (!confirm('Bạn có chắc chắn muốn xóa hết tất cả khoảng nghỉ hiện tại?')) {
+            return false;
+        }
+        document.getElementById('breaks-list').innerHTML = '';
+        let model = getModelFromForm();
+        model.non_working_day_date_time_range = [];
+        saveModel(model);
+        updateRemove();
+    }
+    return true;
+}
 
 // --- Sự kiện ---
 document.getElementById('add-break').onclick = function() {
@@ -278,14 +298,7 @@ document.getElementById('add-break').onclick = function() {
     saveModel(getModelFromForm());
 };
 document.getElementById('clear-breaks').onclick = function() {
-    if (confirm('Bạn có chắc chắn muốn xóa hết tất cả khoảng nghỉ?')) {
-        // Xóa toàn bộ UI
-        document.getElementById('breaks-list').innerHTML = '';
-        // Xóa model
-        let model = getModelFromForm();
-        model.non_working_day_date_time_range = [];
-        saveModel(model);
-    }
+    clearAllBreaksWithConfirm();
 };
 document.getElementById('breaks-list').addEventListener('click', function(e){
     // Nếu click vào nút hoặc icon bên trong nút xóa
@@ -438,6 +451,8 @@ document.querySelectorAll('#add-holidays-menu .dropdown-item').forEach(function(
             const m = startVal.match(/(\d{4})/);
             if (m) year = parseInt(m[1]);
         }
+        // Confirm và xóa hết các break hiện tại trước khi thêm mới
+        if (!clearAllBreaksWithConfirm()) return;
         try {
             const res = await fetch(`/api/holidays?year=${year}&months=${months}`);
             if (!res.ok) throw new Error('Không lấy được danh sách ngày lễ');
