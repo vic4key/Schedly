@@ -44,7 +44,10 @@ def index_post():
         # Xử lý option details
         output_format = "details" if request.form.get("output_format") == "details" else "simple"
 
-        csv_content = schedly.convert_schedule_output_to_csv(schedule_output, output_format=output_format)
+        # Xử lý option display_time
+        date_time_format = "%Y/%m/%d %H:%M" if request.form.get("display_time") == "display_time" else "%Y/%m/%d"
+
+        csv_content = schedly.convert_schedule_output_to_csv(schedule_output, output_format=output_format, date_time_format=date_time_format)
         # Sau khi render, chuyển hướng về GET để tránh hiển thị lại csv_content khi refresh
         session['csv_content'] = csv_content
         session['result'] = result

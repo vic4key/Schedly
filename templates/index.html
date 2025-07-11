@@ -176,6 +176,12 @@
                 Xuất chi tiết từng khung thời gian (details)
             </label>
         </div>
+        <div class="form-check mb-3 row gx-2">
+            <input class="form-check-input" type="checkbox" value="display_time" id="display-time-option" name="display_time">
+            <label class="form-check-label" for="display-time-option">
+                Hiển thị thời gian
+            </label>
+        </div>
         <div class="d-grid gap-2 mb-2 row gx-2">
             <button type="submit" class="btn btn-primary"><i class="bi bi-lightning-charge"></i> SCHED</button>
         </div>
@@ -388,12 +394,22 @@ document.getElementById('details-option').addEventListener('change', function() 
     localStorage.setItem(OUTPUT_FORMAT_KEY, this.checked ? "detail" : "");
 });
 
+// -- Lưu riêng trạng thái checkbox display_time --
+const DISPLAY_TIME_KEY = 'work_schedule_display_time';
+document.getElementById('display-time-option').addEventListener('change', function() {
+    localStorage.setItem(DISPLAY_TIME_KEY, this.checked ? "display" : "");
+});
+
 // -- Load form khi mở --
 window.addEventListener('DOMContentLoaded', function() {
     renderForm(loadModel());
     // Khôi phục trạng thái output_format nếu đã lưu
     const checked = localStorage.getItem(OUTPUT_FORMAT_KEY) === "detail";
     document.getElementById('details-option').checked = checked;
+
+    // Khôi phục trạng thái display_time nếu đã lưu
+    const displayTimeChecked = localStorage.getItem(DISPLAY_TIME_KEY) === "display";
+    document.getElementById('display-time-option').checked = displayTimeChecked;
 
     // Gắn Flatpickr cho tất cả các input khoảng nghỉ đã có khi render
     document.querySelectorAll('input[name="non_working_day_date_time_range"]').forEach(enableFlatpickrOnInput);

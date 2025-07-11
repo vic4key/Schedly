@@ -131,10 +131,12 @@ def allocate_tasks_by_time_range(
         results.append({"name": name, "slots": allocations, "estimate_time": duration})
     return results
 
-def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: str = "details") -> str:
+def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: str = "details", date_time_format: str = None) -> str:
     """
     Chuyển đổi kết quả sang chuỗi CSV với các cột: task_name, est, start_time, end_time.
     Nếu output_format="simple" thì mỗi task chỉ có 1 dòng, thời gian start là slot đầu tiên, end là slot cuối cùng.
+    Nếu date_time_format="%Y/%m/%d %H:%M" or "%Y/%m/%d" đây là định dạng thời gian được dùng để format lại cột start_time, end_time.
+    Sau khi tạo DataFrame, sẽ format lại cột start_time, end_time theo date_time_format nếu có.
     """
     output_details = output_format and output_format == "details"
     rows = []
@@ -176,4 +178,12 @@ def convert_schedule_output_to_csv(schedule_output: List[Dict], output_format: s
         rows = list(grouped.values())
 
     df = pd.DataFrame(rows, columns=["task_name", "estimate_time", "start_time", "end_time"])
+
+    if date_time_format:
+        for idx, row in df.iterrows():
+            start_dt = pd.to_datetime(row["start_time"], errors='coerce')
+            df.at[idx, "start_time"] = start_dt.strftime(date_time_format)
+            end_dt = pd.to_datetime(row["end_time"], errors='coerce')
+            df.at[idx, "end_time"] = end_dt.strftime(date_time_format)
+
     return df.to_csv(index=False)
